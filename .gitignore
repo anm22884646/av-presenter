@@ -1,0 +1,11 @@
+node_modules/
+dist/
+release/
+artifacts/
+.npm-cache/
+.electron-cache/
+release-*/
+.electron-win/
+downloads/
+shared/downloads/
+.windows-app/
