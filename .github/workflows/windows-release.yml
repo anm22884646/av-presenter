@@ -28,7 +28,7 @@ jobs:
       - name: Compile and test
         run: npm test
       - name: Package Windows x64
-        run: npx electron-builder --win --x64 --dir -c.win.signAndEditExecutable=false
+        run: npx electron-builder --win --x64 --dir --publish never
       - name: Create download archives
         shell: pwsh
         run: |

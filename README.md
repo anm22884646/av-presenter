@@ -2,7 +2,7 @@
 
 Windows-first Electron + TypeScript MVP for event playback, Preview/Program cues, and overlays.
 
-Download validation build: `downloads/AV-Presenter-Windows-x64-0.2.0.zip`. Unzip the entire folder and run `AV Presenter.exe`.
+Download the Windows validation build from [GitHub Releases](https://github.com/anm22884646/av-presenter/releases). Unzip the entire folder and run `AV Presenter.exe`.
 See [Windows validation](WINDOWS-VALIDATION.md) for acceptance steps and current limitations.
 
 ## Development on Windows 11 x64
