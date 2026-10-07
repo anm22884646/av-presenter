@@ -32,7 +32,7 @@ TAKE deep-copies Preview into Program. CLEAR disables only Program overlays. A c
 
 Current settings persist in the application user-data directory when saved; optional restore and Windows login startup are available. Frame-perfect sync is not included. Windows runtime and real multi-monitor verification remain pending; see validation notes.
 
-## Language and exhibition startup (0.2.0)
+## Language and exhibition startup (0.2.1)
 
 The header language menu offers English, 日本語, 正體中文, and 简体中文. Language is independent of overlay text and scene state.
 
@@ -45,3 +45,5 @@ Prepare Preview, TAKE the intended exhibit content, start output on the intended
 Countdowns resume from their last saved remaining time; powered-off time is excluded. Video starts at its beginning, with the saved play/pause and loop flags. Missing displays wait for reconnection rather than redirecting output to the primary monitor. Media must stay at its saved path.
 
 Settings are stored as `settings.json` in Electron's userData folder (`%APPDATA%/av-presenter` by default). Move the application before enabling login startup; if its folder changes later, disable and re-enable that option from the new location. Automatic startup requires a Windows user login; the application does not configure BIOS power recovery or Windows automatic login.
+
+Selecting or importing media cues Preview paused at the first frame. Press Preview Play to start it; TAKE uses the prepared play/pause state. Re-selecting the same item cues it back to its first frame. Saved exhibition playback settings still restore as saved.

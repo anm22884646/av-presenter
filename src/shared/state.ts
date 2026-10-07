@@ -3,7 +3,7 @@ export function defaultStyle(x: number, y: number, fontSize: number): OverlaySty
  return {enabled:false,x,y,fontSize,fontFamily:'Segoe UI',fontWeight:600,color:'#ffffff',align:'center',backgroundEnabled:false,backgroundColor:'#000000',backgroundOpacity:0.6,padding:16};
 }
 export function initialScene(): Scene {
- return {media:{item:null,playing:true,loop:true,restartToken:0},clock:{...defaultStyle(90,10,48),align:'right',format:'HH:mm:ss'},
+ return {media:{item:null,playing:false,loop:true,restartToken:0},clock:{...defaultStyle(90,10,48),align:'right',format:'HH:mm:ss'},
  countdown:{...defaultStyle(50,45,100),durationMs:600000,remainingMs:600000,running:false,deadline:null,revision:0},
  text:{...defaultStyle(50,78,64),text:'NEXT SESSION\n10:00 Opening Ceremony'}};
 }

@@ -1,8 +1,8 @@
-# AV Presenter 0.2.0 — Windows 驗證版
+# AV Presenter 0.2.1 — Windows 驗證版
 
 ## 啟動
 
-1. 完整解壓 AV-Presenter-Windows-x64-0.2.0.zip 至本機資料夾。
+1. 完整解壓 AV-Presenter-Windows-x64-0.2.1.zip 至本機資料夾。
 2. 保留 exe 旁所有資料夾與檔案，雙擊 `AV Presenter.exe`。
 3. Windows 11 x64 為主要測試目標。本版本未做程式碼簽章。
 4. 以 Windows「延伸」桌面模式連接第二螢幕。
@@ -11,7 +11,7 @@
 
 - 控制視窗應出現在主螢幕；底部列出所有螢幕及解析度。
 - 選擇第二螢幕，按 START / MOVE OUTPUT；確認乾淨全螢幕黑底，無選單、標題列、邊框。
-- ADD MEDIA 匯入 H.264 MP4、JPG、PNG（亦支援 WebM）。選取媒體只更新 Preview。
+- ADD MEDIA 匯入 H.264 MP4、JPG、PNG（亦支援 WebM）。選取媒體只更新 Preview，影片預設停在第一個影格。
 - 勾選 TEXT Enabled，輸入兩行文字；啟用 CLOCK，調整位置／樣式。
 - 按 TAKE，確認輸出包含背景和疊加。Preview 與控制端 Program 小畫面皆靜音，音訊由 Output 播放。
 - 編輯 Preview 文字，確認輸出維持原文字；再次 TAKE 才更新。
@@ -49,7 +49,7 @@
 
 回報問題時請提供：操作步驟、預期／實際行為、Windows 版本、螢幕解析度與縮放比例、媒體格式；若有錯誤請附控制端文字。
 
-## 0.2.0 語言與展覽自動啟動驗收
+## 0.2.1 語言與展覽自動啟動驗收
 
 1. 依序切換 English、日本語、正體中文、简体中文。按鈕、欄位、對齊選單、輸出狀態應即時更新；文字輸入、字體大小、位置與 Program 不變。
 2. 準備展覽內容，按 TAKE，開啟目標輸出；設定 Clock / Countdown 的字體、位置、背景。
@@ -62,3 +62,13 @@
 9. 取消自動還原，重啟後應是新的黑底場景；取消登入自動啟動，重新登入後不啟動。
 
 請先把應用程式放在固定資料夾再啟用登入自動啟動。若移動資料夾，從新位置取消並重新勾選登入自動啟動。自動啟動以 Windows 已登入為前提；不會修改 BIOS 斷電復電設定或 Windows 自動登入設定。
+
+## 0.2.1 Preview 首影格驗收
+
+- 匯入影片後，確認 Preview 顯示第一個影格且不自動播放。
+- 選取另一支影片，確認同樣暫停在第一個影格。
+- 先播放 Preview，再重新選取同一支影片，確認回到第一個影格並暫停。
+- 準備時只改 Preview，確認目前 Program 仍維持原播放狀態。
+- Preview 暫停時 TAKE，確認 Program 顯示首影格；按 Program Play 後播放。
+- Preview 先按 Play 再 TAKE，確認 Program 依準備的播放狀態播放。
+- 已儲存的展覽播放狀態仍照原設定還原，不因新素材預設暫停而改動。

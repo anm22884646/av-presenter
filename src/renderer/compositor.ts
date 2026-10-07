@@ -14,7 +14,7 @@ export class Compositor {
  constructor(private host:HTMLElement,private mode:'preview'|'program'|'output') {
   host.classList.add('composition');this.surface.className='surface';host.append(this.surface);
   this.video.className='background';this.image.className='background';
-  this.video.muted=mode!=='output';this.video.playsInline=true;
+  this.video.muted=mode!=='output';this.video.playsInline=true;this.video.preload='auto';
   this.surface.append(this.video,this.image,this.clock,this.countdown,this.text);
   for(const node of [this.clock,this.countdown,this.text])node.className='overlay';
   this.text.style.zIndex='3';this.clock.style.zIndex=this.countdown.style.zIndex='2';

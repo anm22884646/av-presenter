@@ -1,4 +1,4 @@
-import type { DisplayInfo, Snapshot, Scene, OverlayStyle, TimerAction, PlaybackAction, Preferences, StartupSettings } from '../../shared/types';
+import type { DisplayInfo, Snapshot, Scene, OverlayStyle, TimerAction, PlaybackAction, MediaItem, Preferences, StartupSettings } from '../../shared/types';
 import { initialScene, operateTimer, parseDuration, remaining, formatDuration } from '../../shared/state';
 import { Compositor } from '../compositor';
 import { loadLanguage, getLanguage, setLanguage, t, translateInterface, translateMessage } from './i18n';
@@ -19,11 +19,16 @@ function renderDisplays(items:DisplayInfo[]) {
  select.value=String(items.find(d=>d.id===previous)?.id??items.find(d=>!d.primary)?.id??items[0]?.id);
  el('display-note').textContent=items.length===1?t('No secondary display — output will open in a window.'):'';
 }
+function cueMedia(item:MediaItem){
+ preview.media.item=item;preview.media.playing=false;
+ // Re-selecting the current item must also return Preview to its first frame.
+ preview.media.restartToken++;refresh();
+}
 function renderMedia() {
  el('media-list').replaceChildren(...snapshot.media.map(item=>{
   const li=document.createElement('li'),select=document.createElement('button'),remove=document.createElement('button');
   select.className=`media-choice${preview.media.item?.id===item.id?' selected':''}`;select.textContent=item.name;select.title=item.name;
-  select.onclick=()=>{preview.media.item=item;preview.media.playing=true;refresh();};
+  select.onclick=()=>cueMedia(item);
   remove.textContent='×';remove.setAttribute('aria-label',t('Remove {name}',{name:item.name}));remove.disabled=snapshot.program.media.item?.id===item.id;
   remove.onclick=()=>{run(window.av.removeMedia(item.id).then(()=>{if(preview.media.item?.id===item.id){preview.media.item=null;refresh();}}));};
   li.append(select,remove);return li;
@@ -49,7 +54,7 @@ el<HTMLTextAreaElement>('text-content').value=preview.text.text;
 el<HTMLTextAreaElement>('text-content').oninput=()=>{preview.text.text=el<HTMLTextAreaElement>('text-content').value;refresh();};
 el<HTMLSelectElement>('clock-format').value=preview.clock.format;
 el<HTMLSelectElement>('clock-format').onchange=()=>{preview.clock.format=el<HTMLSelectElement>('clock-format').value as Scene['clock']['format'];refresh();};
-el('add').onclick=()=>run(window.av.addMedia().then(items=>{if(items[0]){preview.media.item=items[0];preview.media.playing=true;refresh();}}));
+el('add').onclick=()=>run(window.av.addMedia().then(items=>{if(items[0])cueMedia(items[0]);}));
 el('black').onclick=()=>{preview.media.item=null;refresh();};
 el('take').onclick=()=>run(window.av.take(structuredClone(preview)));
 el('clear').onclick=()=>run(window.av.clear());
