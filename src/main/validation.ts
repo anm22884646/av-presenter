@@ -1,3 +1,4 @@
+import { MAX_OVERLAY_POSITIONS } from '../shared/state';
 import type { Scene, MediaItem, OverlayStyle } from '../shared/types';
 function number(v:unknown,min:number,max:number): v is number {return typeof v==='number' && Number.isFinite(v) && v>=min && v<=max;}
 function style(v:OverlayStyle): boolean {
@@ -17,7 +18,13 @@ export function validateScene(value:unknown,media:MediaItem[]): Scene {
  || !Number.isSafeInteger(v.countdown.revision) || v.countdown.revision<0
  || typeof v.media.playing!=='boolean' || typeof v.media.loop!=='boolean'
  || !Number.isSafeInteger(v.media.restartToken) || v.media.restartToken<0) throw new Error('Invalid preview state');
+ for(const key of ['text','clock','countdown'] as const) {
+  const copies=v[key].copies;
+  // Version 0.2 settings have only the original position.
+  if(copies!==undefined && (!Array.isArray(copies) || copies.length>=MAX_OVERLAY_POSITIONS || !Array.from(copies).every(style)))throw new Error('Invalid preview state');
+ }
  const next=structuredClone(v);
+ for(const key of ['text','clock','countdown'] as const)next[key].copies??=[];
  if(next.media.item) {
   const item=media.find(m=>m.id===next.media.item?.id);
   if(!item) throw new Error('Selected media is no longer in the library');

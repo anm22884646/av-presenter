@@ -1,5 +1,5 @@
 import type { DisplayInfo, Snapshot, Scene, OverlayStyle, TimerAction, PlaybackAction, MediaItem, Preferences, StartupSettings } from '../../shared/types';
-import { initialScene, operateTimer, parseDuration, remaining, formatDuration } from '../../shared/state';
+import { initialScene, MAX_OVERLAY_POSITIONS, copyOverlayStyle, operateTimer, parseDuration, remaining, formatDuration } from '../../shared/state';
 import { Compositor } from '../compositor';
 import { loadLanguage, getLanguage, setLanguage, t, translateInterface, translateMessage } from './i18n';
 loadLanguage();
@@ -10,6 +10,29 @@ const previewRenderer=new Compositor(el('preview'),'preview'),programRenderer=ne
 let lastError:string|null=null, durationInvalid=false, currentDisplays:DisplayInfo[]=[],settingsReady=false;
 let preferences:Preferences={restoreOnLaunch:false,startAtLogin:false,language:getLanguage()};
 let saveStatusKey='';
+type OverlayKey='text'|'clock'|'countdown';
+const selectedPosition:Record<OverlayKey,number>={text:0,clock:0,countdown:0};
+function selectedStyle(key:OverlayKey):OverlayStyle{return selectedPosition[key]===0?preview[key]:preview[key].copies[selectedPosition[key]-1];}
+function syncStyleEditor(key:OverlayKey){
+ for(const [property,value] of Object.entries(selectedStyle(key))){
+  if(property==='enabled')continue;
+  const input=document.getElementById(`${key}-${property}`);
+  if(input instanceof HTMLInputElement){if(input.type==='checkbox')input.checked=Boolean(value);else input.value=String(value);}
+  else if(input instanceof HTMLSelectElement)input.value=String(value);
+ }
+}
+function renderPositions(key:OverlayKey){
+ const select=el<HTMLSelectElement>(`${key}-position`);
+ select.replaceChildren(...[preview[key],...preview[key].copies].map((_,index)=>{
+  const option=document.createElement('option');option.value=String(index);option.textContent=t('Position {number}',{number:index+1});return option;
+ }));
+ selectedPosition[key]=Math.min(selectedPosition[key],preview[key].copies.length);
+ select.value=String(selectedPosition[key]);
+ el<HTMLButtonElement>(`${key}-add-position`).disabled=preview[key].copies.length>=MAX_OVERLAY_POSITIONS-1;
+ el<HTMLButtonElement>(`${key}-remove-position`).disabled=selectedPosition[key]===0;
+ syncStyleEditor(key);
+}
+
 const run=(task:Promise<unknown>)=>task.catch(e=>{lastError=String(e);el('error').textContent=translateMessage(lastError);});
 const refresh=()=>{previewRenderer.update(preview);renderMedia();if(settingsReady)run(window.av.updatePreview(structuredClone(preview)));};
 function renderDisplays(items:DisplayInfo[]) {
@@ -93,10 +116,26 @@ languageSelect.onchange=()=>{
  setLanguage(languageSelect.value);translateInterface(document.body);
  languageSelect.setAttribute('aria-label',t('Language'));
  renderDisplays(currentDisplays);renderMedia();renderLocalizedStatus();
+ for(const key of ['text','clock','countdown'] as const)renderPositions(key);
  if(settingsReady)run(window.av.updatePreferences({...preferences,language:getLanguage()}).then(applySettings));
 };
 function buildStyleEditor(key:'text'|'clock'|'countdown') {
  const host=el(`${key}-style`),grid=document.createElement('div');grid.className='style-grid';
+ const positions=document.createElement('div');positions.className='position-controls';
+ const label=document.createElement('label');label.textContent='Edit position';
+ const select=document.createElement('select');select.id=`${key}-position`;select.dataset.dynamic='';label.append(select);
+ select.onchange=()=>{selectedPosition[key]=Number(select.value);renderPositions(key);};
+ const add=document.createElement('button');add.id=`${key}-add-position`;add.textContent='Add position';
+ add.onclick=()=>{
+  if(preview[key].copies.length>=MAX_OVERLAY_POSITIONS-1)return;
+  const copy=copyOverlayStyle(selectedStyle(key));copy.y=copy.y<=85?copy.y+10:copy.y-10;
+  preview[key].copies.push(copy);selectedPosition[key]=preview[key].copies.length;renderPositions(key);refresh();
+ };
+ const remove=document.createElement('button');remove.id=`${key}-remove-position`;remove.textContent='Remove position';
+ remove.onclick=()=>{if(selectedPosition[key]===0)return;preview[key].copies.splice(selectedPosition[key]-1,1);selectedPosition[key]=0;renderPositions(key);refresh();};
+ const hint=document.createElement('p');hint.className='hint';hint.textContent='All positions share the same content. Up to 8 positions.';
+ positions.append(label,add,remove);host.append(positions,hint);
+
  const definitions:[keyof OverlayStyle,string,string,number?,number?,number?][]=[
   ['x','X (%)','number',0,100,1],['y','Y (%)','number',0,100,1],['fontSize','Font size (at 1080p)','number',8,300,1],['fontFamily','Font family','text'],
   ['fontWeight','Weight','weight'],['align','Alignment','align'],['color','Text color','color'],['padding','Padding','number',0,100,1],
@@ -114,15 +153,15 @@ function buildStyleEditor(key:'text'|'clock'|'countdown') {
   input.addEventListener('input',()=>{
    if(input instanceof HTMLInputElement && !input.checkValidity())return;
    const next=type==='checkbox'?(input as HTMLInputElement).checked:type==='number'||type==='weight'?Number(input.value):input.value;
-   (preview[key] as unknown as Record<string,unknown>)[property]=next;refresh();
+   (selectedStyle(key) as unknown as Record<string,unknown>)[property]=next;refresh();
   });
   label.append(input);grid.append(label);
  }
  const presets=document.createElement('div');presets.className='presets';
  for(const [title,x,y,align] of [['Top left',5,10,'left'],['Top center',50,10,'center'],['Top right',95,10,'right'],['Center',50,50,'center'],['Bottom left',5,90,'left'],['Bottom center',50,90,'center'],['Bottom right',95,90,'right']] as const) {
-  const b=document.createElement('button');b.textContent=title;b.onclick=()=>{Object.assign(preview[key],{x,y,align});el<HTMLInputElement>(`${key}-x`).value=String(x);el<HTMLInputElement>(`${key}-y`).value=String(y);el<HTMLSelectElement>(`${key}-align`).value=align;refresh();};presets.append(b);
+  const b=document.createElement('button');b.textContent=title;b.onclick=()=>{Object.assign(selectedStyle(key),{x,y,align});el<HTMLInputElement>(`${key}-x`).value=String(x);el<HTMLInputElement>(`${key}-y`).value=String(y);el<HTMLSelectElement>(`${key}-align`).value=align;refresh();};presets.append(b);
  }
- host.append(presets,grid);
+ host.append(presets,grid);renderPositions(key);
 }
 window.av.onDisplays(renderDisplays);window.av.onSnapshot(receive);
 async function initialize(){
@@ -142,15 +181,12 @@ function applySettings(value:StartupSettings){
  el<HTMLInputElement>('start-at-login').checked=preferences.startAtLogin;
  el<HTMLInputElement>('start-at-login').disabled=!value.loginSupported;
  renderDisplays(currentDisplays);renderMedia();renderLocalizedStatus();
+ for(const key of ['text','clock','countdown'] as const)renderPositions(key);
 }
 function syncEditor(){
  for(const key of ['text','clock','countdown'] as const){
   el<HTMLInputElement>(`${key}-enabled`).checked=preview[key].enabled;
-  for(const [property,value] of Object.entries(preview[key])){
-   const input=document.getElementById(`${key}-${property}`);
-   if(input instanceof HTMLInputElement){if(input.type==='checkbox')input.checked=Boolean(value);else input.value=String(value);}
-   else if(input instanceof HTMLSelectElement)input.value=String(value);
-  }
+  renderPositions(key);
  }
  el<HTMLTextAreaElement>('text-content').value=preview.text.text;
  el<HTMLSelectElement>('clock-format').value=preview.clock.format;

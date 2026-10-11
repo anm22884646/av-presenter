@@ -91,7 +91,12 @@ export const translations: Record<Language, Record<string,string>> = {
     "Saved settings are invalid": "Saved settings are invalid",
     "Invalid preferences": "Invalid preferences",
     "Windows login startup requires a packaged Windows application": "Windows login startup requires a packaged Windows application",
-    "Could not update Windows login startup": "Could not update Windows login startup"
+    "Could not update Windows login startup": "Could not update Windows login startup",
+    "Edit position": "Edit position",
+    "Add position": "Add position",
+    "Remove position": "Remove position",
+    "Position {number}": "Position {number}",
+    "All positions share the same content. Up to 8 positions.": "All positions share the same content. Up to 8 positions."
   },
   "ja": {
     "LIVE EVENT CONTROL": "ライブイベント操作",
@@ -183,7 +188,12 @@ export const translations: Record<Language, Record<string,string>> = {
     "Saved settings are invalid": "保存した設定が無効です",
     "Invalid preferences": "設定が無効です",
     "Windows login startup requires a packaged Windows application": "Windows の自動起動にはパッケージ化した Windows アプリが必要です",
-    "Could not update Windows login startup": "Windows の自動起動設定を更新できません"
+    "Could not update Windows login startup": "Windows の自動起動設定を更新できません",
+    "Edit position": "編集する位置",
+    "Add position": "表示位置を追加",
+    "Remove position": "表示位置を削除",
+    "Position {number}": "位置 {number}",
+    "All positions share the same content. Up to 8 positions.": "すべての位置で同じ内容を表示します。最大8か所。"
   },
   "zh-Hant": {
     "LIVE EVENT CONTROL": "現場活動控制",
@@ -275,7 +285,12 @@ export const translations: Record<Language, Record<string,string>> = {
     "Saved settings are invalid": "儲存的設定無效",
     "Invalid preferences": "偏好設定無效",
     "Windows login startup requires a packaged Windows application": "登入自動啟動需要使用已封裝的 Windows 應用程式",
-    "Could not update Windows login startup": "無法更新 Windows 登入啟動設定"
+    "Could not update Windows login startup": "無法更新 Windows 登入啟動設定",
+    "Edit position": "編輯顯示位置",
+    "Add position": "新增顯示位置",
+    "Remove position": "刪除顯示位置",
+    "Position {number}": "位置 {number}",
+    "All positions share the same content. Up to 8 positions.": "所有位置共用相同內容，最多可設定 8 個位置。"
   },
   "zh-Hans": {
     "LIVE EVENT CONTROL": "现场活动控制",
@@ -367,7 +382,12 @@ export const translations: Record<Language, Record<string,string>> = {
     "Saved settings are invalid": "保存的设置无效",
     "Invalid preferences": "偏好设置无效",
     "Windows login startup requires a packaged Windows application": "登录自动启动需要使用已打包的 Windows 应用程序",
-    "Could not update Windows login startup": "无法更新 Windows 登录启动设置"
+    "Could not update Windows login startup": "无法更新 Windows 登录启动设置",
+    "Edit position": "编辑显示位置",
+    "Add position": "新增显示位置",
+    "Remove position": "删除显示位置",
+    "Position {number}": "位置 {number}",
+    "All positions share the same content. Up to 8 positions.": "所有位置共用相同内容，最多可设置 8 个位置。"
   }
 };
 let language: Language = 'en';

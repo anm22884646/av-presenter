@@ -6,12 +6,13 @@ export interface OverlayStyle {
  color: string; align: 'left' | 'center' | 'right'; backgroundEnabled: boolean;
  backgroundColor: string; backgroundOpacity: number; padding: number;
 }
-export interface Countdown extends OverlayStyle { durationMs: number; remainingMs: number; running: boolean; deadline: number | null; revision: number }
+export interface PositionedOverlay extends OverlayStyle { copies: OverlayStyle[] }
+export interface Countdown extends PositionedOverlay { durationMs: number; remainingMs: number; running: boolean; deadline: number | null; revision: number }
 export interface Scene {
  media: { item: MediaItem | null; playing: boolean; loop: boolean; restartToken: number };
- clock: OverlayStyle & { format: 'HH:mm' | 'HH:mm:ss' | 'YYYY/MM/DD HH:mm' };
+ clock: PositionedOverlay & { format: 'HH:mm' | 'HH:mm:ss' | 'YYYY/MM/DD HH:mm' };
  countdown: Countdown;
- text: OverlayStyle & { text: string };
+ text: PositionedOverlay & { text: string };
 }
 export interface Preferences { restoreOnLaunch:boolean; startAtLogin:boolean; language:'en'|'ja'|'zh-Hant'|'zh-Hans' }
 export interface StartupSettings { preferences:Preferences; preview:Scene; selectedDisplayId?:number; savedAt:string|null; loginSupported:boolean }

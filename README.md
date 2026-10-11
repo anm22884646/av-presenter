@@ -32,7 +32,7 @@ TAKE deep-copies Preview into Program. CLEAR disables only Program overlays. A c
 
 Current settings persist in the application user-data directory when saved; optional restore and Windows login startup are available. Frame-perfect sync is not included. Windows runtime and real multi-monitor verification remain pending; see validation notes.
 
-## Language and exhibition startup (0.2.1)
+## Language and exhibition startup (0.3.0)
 
 The header language menu offers English, 日本語, 正體中文, and 简体中文. Language is independent of overlay text and scene state.
 
@@ -47,3 +47,11 @@ Countdowns resume from their last saved remaining time; powered-off time is excl
 Settings are stored as `settings.json` in Electron's userData folder (`%APPDATA%/av-presenter` by default). Move the application before enabling login startup; if its folder changes later, disable and re-enable that option from the new location. Automatic startup requires a Windows user login; the application does not configure BIOS power recovery or Windows automatic login.
 
 Selecting or importing media cues Preview paused at the first frame. Press Preview Play to start it; TAKE uses the prepared play/pause state. Re-selecting the same item cues it back to its first frame. Saved exhibition playback settings still restore as saved.
+
+## Multiple overlay positions (0.3.0)
+
+Text, clock, and countdown each support up to 8 display positions sharing one content source. Enable the overlay, enter its text or time settings, then click **Add position**. Choose the position in **Edit position** and adjust its font, size, color, alignment, X/Y coordinates, padding, or background. New positions copy the selected style and start slightly offset so they are easy to locate. **Remove position** removes an additional position; the original position always remains.
+
+For example, enter “Next stage starts at 10:00” once and place it at both the top and bottom of the screen. Editing that text updates every position in Preview. Clock positions share system time; countdown positions share a single timer. Press **TAKE** to apply your prepared positions to Program. **CLEAR OVERLAYS** hides every Program position while preserving media playback and timer state.
+
+All positions are included in saved settings and exhibition startup restore. Existing 0.2 settings load as one position per overlay.

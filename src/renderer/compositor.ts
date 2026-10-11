@@ -4,9 +4,7 @@ export class Compositor {
  private scene=initialScene();
  private video=document.createElement('video');
  private image=document.createElement('img');
- private clock=document.createElement('div');
- private countdown=document.createElement('div');
- private text=document.createElement('div');
+ private overlays:Record<'clock'|'countdown'|'text',HTMLElement[]>={clock:[],countdown:[],text:[]};
  private mediaId:string|null=null;
  private restartToken=-1;
  private surface=document.createElement('div');
@@ -15,9 +13,7 @@ export class Compositor {
   host.classList.add('composition');this.surface.className='surface';host.append(this.surface);
   this.video.className='background';this.image.className='background';
   this.video.muted=mode!=='output';this.video.playsInline=true;this.video.preload='auto';
-  this.surface.append(this.video,this.image,this.clock,this.countdown,this.text);
-  for(const node of [this.clock,this.countdown,this.text])node.className='overlay';
-  this.text.style.zIndex='3';this.clock.style.zIndex=this.countdown.style.zIndex='2';
+  this.surface.append(this.video,this.image);
   this.video.addEventListener('error',()=>this.mediaError());this.image.addEventListener('error',()=>this.mediaError());
   this.video.addEventListener('ended',()=>{if(this.mediaId && mode==='output')window.av.reportEnded(this.mediaId,this.scene.media.restartToken);});
   this.resize=new ResizeObserver(()=>this.layout());this.resize.observe(host);
@@ -45,8 +41,13 @@ export class Compositor {
    if(this.restartToken!==scene.media.restartToken){this.video.currentTime=0;this.restartToken=scene.media.restartToken;}
    if(scene.media.playing){void this.video.play().catch(()=>{/* Media error event supplies the file/codec diagnosis. */});}else this.video.pause();
   }
-  this.applyStyle(this.clock,scene.clock);this.applyStyle(this.countdown,scene.countdown);this.applyStyle(this.text,scene.text);
-  this.text.textContent=scene.text.text;this.tick();
+  for(const key of ['clock','countdown','text'] as const) {
+   const overlay=scene[key],styles=[overlay,...overlay.copies],nodes=this.overlays[key];
+   while(nodes.length>styles.length)nodes.pop()!.remove();
+   while(nodes.length<styles.length){const node=document.createElement('div');node.className='overlay';node.style.zIndex=key==='text'?'3':'2';this.surface.append(node);nodes.push(node);}
+   styles.forEach((style,index)=>{this.applyStyle(nodes[index],style);nodes[index].hidden=!overlay.enabled || !style.enabled;});
+  }
+  this.tick();
  }
  private applyStyle(node:HTMLElement,style:OverlayStyle) {
   node.hidden=!style.enabled;
@@ -58,8 +59,11 @@ export class Compositor {
  private tick() {
   const now=new Date(),p=(n:number)=>String(n).padStart(2,'0');
   const hm=`${p(now.getHours())}:${p(now.getMinutes())}`;
-  this.clock.textContent=this.scene.clock.format==='HH:mm:ss'?`${hm}:${p(now.getSeconds())}`:this.scene.clock.format==='YYYY/MM/DD HH:mm'?`${now.getFullYear()}/${p(now.getMonth()+1)}/${p(now.getDate())} ${hm}`:hm;
-  this.countdown.textContent=formatDuration(remaining(this.scene.countdown));
+  const clock=this.scene.clock.format==='HH:mm:ss'?`${hm}:${p(now.getSeconds())}`:this.scene.clock.format==='YYYY/MM/DD HH:mm'?`${now.getFullYear()}/${p(now.getMonth()+1)}/${p(now.getDate())} ${hm}`:hm;
+  const countdown=formatDuration(remaining(this.scene.countdown,now.getTime()));
+  for(const node of this.overlays.clock)node.textContent=clock;
+  for(const node of this.overlays.countdown)node.textContent=countdown;
+  for(const node of this.overlays.text)node.textContent=this.scene.text.text;
  }
 }
 function rgba(hex:string,opacity:number){return `rgba(${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)},${opacity})`;}

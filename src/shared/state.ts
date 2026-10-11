@@ -3,9 +3,9 @@ export function defaultStyle(x: number, y: number, fontSize: number): OverlaySty
  return {enabled:false,x,y,fontSize,fontFamily:'Segoe UI',fontWeight:600,color:'#ffffff',align:'center',backgroundEnabled:false,backgroundColor:'#000000',backgroundOpacity:0.6,padding:16};
 }
 export function initialScene(): Scene {
- return {media:{item:null,playing:false,loop:true,restartToken:0},clock:{...defaultStyle(90,10,48),align:'right',format:'HH:mm:ss'},
- countdown:{...defaultStyle(50,45,100),durationMs:600000,remainingMs:600000,running:false,deadline:null,revision:0},
- text:{...defaultStyle(50,78,64),text:'NEXT SESSION\n10:00 Opening Ceremony'}};
+ return {media:{item:null,playing:false,loop:true,restartToken:0},clock:{...defaultStyle(90,10,48),align:'right',copies:[],format:'HH:mm:ss'},
+ countdown:{...defaultStyle(50,45,100),copies:[],durationMs:600000,remainingMs:600000,running:false,deadline:null,revision:0},
+ text:{...defaultStyle(50,78,64),copies:[],text:'NEXT SESSION\n10:00 Opening Ceremony'}};
 }
 export function remaining(timer: Countdown, now = Date.now()): number {
  return timer.running && timer.deadline !== null ? Math.max(0,timer.deadline-now) : timer.remainingMs;
@@ -37,4 +37,15 @@ export function parseDuration(value:string): number | null {
 export function formatDuration(ms: number): string {
  const total=Math.max(0,Math.ceil(ms/1000)),s=String(total%60).padStart(2,'0'),m=String(Math.floor(total/60)%60).padStart(2,'0');
  return total>=3600 ? `${String(Math.floor(total/3600)).padStart(2,'0')}:${m}:${s}` : `${m}:${s}`;
+}
+
+export const MAX_OVERLAY_POSITIONS = 8;
+/** Copy only visual properties: content and timer state always stay shared. */
+export function copyOverlayStyle(source: OverlayStyle): OverlayStyle {
+ const result=defaultStyle(source.x,source.y,source.fontSize);
+ for(const property of Object.keys(result) as (keyof OverlayStyle)[]) {
+  (result as unknown as Record<string,unknown>)[property]=source[property];
+ }
+ result.enabled=true;
+ return result;
 }
