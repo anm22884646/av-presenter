@@ -19,6 +19,7 @@ export function operateTimer(timer: Countdown, action: TimerAction, now = Date.n
 }
 export function takeScene(preview: Scene, program: Scene): Scene {
  const next = structuredClone(preview);
+ if(next.media.item?.type==='video')next.media.playing=true;
  if(next.countdown.revision === program.countdown.revision && next.countdown.durationMs === program.countdown.durationMs) {
   Object.assign(next.countdown,{remainingMs:program.countdown.remainingMs,running:program.countdown.running,deadline:program.countdown.deadline});
  }

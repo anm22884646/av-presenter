@@ -90,7 +90,7 @@ for(const b of document.querySelectorAll<HTMLButtonElement>('[data-preview-play]
  if(action==='restart'){preview.media.restartToken++;preview.media.playing=true;}else preview.media.playing=action==='play';refresh();
 };
 for(const b of document.querySelectorAll<HTMLButtonElement>('[data-program-play]'))b.onclick=()=>run(window.av.playback(b.dataset.programPlay as PlaybackAction).then(()=>{
- // Mirror transport when the same media is cued, so a later overlay TAKE does not undo a pause.
+ // Mirror transport for the same cued media, including explicit restart commands.
  if(preview.media.item?.id===snapshot.program.media.item?.id)Object.assign(preview.media,{playing:snapshot.program.media.playing,restartToken:snapshot.program.media.restartToken});refresh();
 }));
 el('set-duration').onclick=()=>{

@@ -46,7 +46,7 @@ Countdowns resume from their last saved remaining time; powered-off time is excl
 
 Settings are stored as `settings.json` in Electron's userData folder (`%APPDATA%/av-presenter` by default). Move the application before enabling login startup; if its folder changes later, disable and re-enable that option from the new location. Automatic startup requires a Windows user login; the application does not configure BIOS power recovery or Windows automatic login.
 
-Selecting or importing media cues Preview paused at the first frame. Press Preview Play to start it; TAKE uses the prepared play/pause state. Re-selecting the same item cues it back to its first frame. Saved exhibition playback settings still restore as saved.
+Selecting or importing media cues Preview paused at the first frame. Press Preview Play to start it; TAKE starts video playback on Program, even when Preview is paused. Re-selecting the same item cues it back to its first frame. Saved exhibition playback settings still restore as saved.
 
 ## Multiple overlay positions (0.3.0)
 
@@ -55,3 +55,5 @@ Text, clock, and countdown each support up to 8 display positions sharing one co
 For example, enter “Next stage starts at 10:00” once and place it at both the top and bottom of the screen. Editing that text updates every position in Preview. Clock positions share system time; countdown positions share a single timer. Press **TAKE** to apply your prepared positions to Program. **CLEAR OVERLAYS** hides every Program position while preserving media playback and timer state.
 
 All positions are included in saved settings and exhibition startup restore. Existing 0.2 settings load as one position per overlay.
+
+TAKE always starts or resumes the selected video on Program. Taking overlay edits for the same video keeps its current playback position unless you explicitly restart or re-cue it. Preview stays in its prepared play/pause state; countdown start/pause remains controlled separately.

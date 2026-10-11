@@ -1,8 +1,8 @@
-# AV Presenter 0.3.0 — Windows 驗證版
+# AV Presenter 0.3.1 — Windows 驗證版
 
 ## 啟動
 
-1. 完整解壓 AV-Presenter-Windows-x64-0.3.0.zip 至本機資料夾。
+1. 完整解壓 AV-Presenter-Windows-x64-0.3.1.zip 至本機資料夾。
 2. 保留 exe 旁所有資料夾與檔案，雙擊 `AV Presenter.exe`。
 3. Windows 11 x64 為主要測試目標。本版本未做程式碼簽章。
 4. 以 Windows「延伸」桌面模式連接第二螢幕。
@@ -69,8 +69,8 @@
 - 選取另一支影片，確認同樣暫停在第一個影格。
 - 先播放 Preview，再重新選取同一支影片，確認回到第一個影格並暫停。
 - 準備時只改 Preview，確認目前 Program 仍維持原播放狀態。
-- Preview 暫停時 TAKE，確認 Program 顯示首影格；按 Program Play 後播放。
-- Preview 先按 Play 再 TAKE，確認 Program 依準備的播放狀態播放。
+- Preview 暫停時 TAKE，確認 Program 從首影格開始播放；Preview 保持暫停。
+- Preview 先按 Play 再 TAKE，確認 Program 開始播放。
 - 已儲存的展覽播放狀態仍照原設定還原，不因新素材預設暫停而改動。
 
 ## 多位置疊加驗收
@@ -82,3 +82,10 @@
 5. 每種疊加最多 8 個位置；達到上限時新增按鈕停用。切換四種介面語言，位置選單與按鈕應翻譯。
 6. 按 CLEAR OVERLAYS，確認 Program 的所有位置隱藏，背景播放與倒數不中斷。
 7. 儲存並啟用啟動還原，關閉再開啟，確認 Preview／Program 的多個位置及各自樣式分別還原。舊版 0.2 設定應正常載入為單一位置。
+
+## 0.3.1 TAKE 播放驗收
+
+- 匯入或選取影片，確認 Preview 停在首影格；直接 TAKE，確認 Program 與 Output 開始播放。
+- Program 暫停後再次 TAKE 相同影片，應繼續播放；未重新選取或按 Restart 時，不應跳回開頭。
+- 影片播放中只改文字位置並 TAKE，應繼續播放且不回到開頭。
+- TAKE 圖片或黑底仍正常顯示；TAKE 不會額外啟動已暫停的倒數。

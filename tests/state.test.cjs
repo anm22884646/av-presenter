@@ -35,3 +35,16 @@ test('IPC rejects unregistered media and invalid style data',()=>{
  assert.throws(()=>validateScene(scene,[]));scene.media.item=null;scene.text.x=NaN;assert.throws(()=>validateScene(scene,[]));
  scene.text.x=50;assert.doesNotThrow(()=>validateScene(scene,[]));
 });
+
+test('TAKE starts cued videos without changing Preview or restarting the current video',()=>{
+ const program=initialScene(),preview=initialScene();
+ preview.media.item={id:'video',name:'clip.mp4',url:'av-media://video/content.mp4',type:'video'};
+ preview.media.restartToken=7;
+ const first=takeScene(preview,program);
+ assert.equal(first.media.playing,true);assert.equal(preview.media.playing,false);assert.equal(first.media.restartToken,7);
+ const paused=structuredClone(first);paused.media.playing=false;
+ const next=takeScene(preview,paused);assert.equal(next.media.playing,true);assert.equal(next.media.restartToken,paused.media.restartToken);
+ preview.media.item={id:'image',name:'image.png',url:'av-media://image/content.png',type:'image'};
+ assert.equal(takeScene(preview,first).media.playing,false);
+ preview.media.item=null;assert.equal(takeScene(preview,first).media.playing,false);
+});
