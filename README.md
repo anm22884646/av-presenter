@@ -59,3 +59,11 @@ All positions are included in saved settings and exhibition startup restore. Exi
 TAKE always starts or resumes the selected video on Program. Taking overlay edits for the same video keeps its current playback position unless you explicitly restart or re-cue it. Preview stays in its prepared play/pause state; countdown start/pause remains controlled separately.
 
 X/Y percentage fields accept decimal positions such as `2.5` or `2.55`, with arrow increments of `0.01%`. This applies to every text, clock, and countdown position. Decimal coordinates are preserved by TAKE and saved settings.
+
+## Output performance (0.3.3)
+
+Text overlays update only when displayed content changes. Overlay edits no longer repeatedly request video playback. Control video elements preload metadata instead of buffering the full video before playback. Hidden or minimized Control suspends its own video playback and overlay updates; external Output continues independently.
+
+For 4K video or a less powerful computer, enable **Reduce control video load while output is active** below the monitors. While Output is open, both Control video previews pause on a still frame to avoid their additional continuous video decoding. Text, clock, and countdown continue to update in visible Control; TAKE and on-air transport still operate Output normally. Uncheck the option or stop Output to resume Control video previews. This preference is remembered separately from scene restoration and is off by default.
+
+Output resolution, video playback, audio, and overlay styling are preserved. This reduces redundant work; it does not guarantee smooth 4K playback on every GPU or codec. For testing, compare the same scene with the option off/on and with Control minimized, while keeping the same output resolution and display refresh rate. Check CPU, GPU Video Decode, and GPU 3D usage in Windows Task Manager. Physical Windows/4K performance measurements remain pending.

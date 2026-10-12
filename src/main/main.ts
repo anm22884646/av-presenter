@@ -61,7 +61,7 @@ const broadcast=(persist=true)=>{if(persist)scheduleSave();for(const w of [contr
 const displays=():DisplayInfo[]=>screen.getAllDisplays().map((d,i)=>({id:d.id,label:d.label||`Display ${i+1}`,width:d.size.width,height:d.size.height,primary:d.id===screen.getPrimaryDisplay().id}));
 function createWindow(kind:'control'|'output') {
  const win=new BrowserWindow({width:1200,height:800,backgroundColor:'#000000',show:false,frame:kind==='control',autoHideMenuBar:true,
-  webPreferences:{preload:path.join(__dirname,'../preload/preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
+  webPreferences:{preload:path.join(__dirname,'../preload/preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:kind==='control'}});
  win.setMenu(null);
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  win.webContents.on('will-navigate',e=>e.preventDefault());
@@ -121,7 +121,7 @@ app.whenReady().then(()=>{
   clearTimeout(persistTimer);saveSettings(true);return startup();
  });
  handle('settings:preferences',(value:Preferences)=>{
-  if(!value || typeof value.restoreOnLaunch!=='boolean' || typeof value.startAtLogin!=='boolean' || !['en','ja','zh-Hant','zh-Hans'].includes(value.language))throw new Error('Invalid preferences');
+  if(!value || typeof value.restoreOnLaunch!=='boolean' || typeof value.startAtLogin!=='boolean' || typeof value.reduceControlVideoLoad!=='boolean' || !['en','ja','zh-Hant','zh-Hans'].includes(value.language))throw new Error('Invalid preferences');
   if(value.startAtLogin!==preferences.startAtLogin){
    if(process.platform!=='win32' || !app.isPackaged)throw new Error('Windows login startup requires a packaged Windows application');
    app.setLoginItemSettings({openAtLogin:value.startAtLogin,path:process.execPath});

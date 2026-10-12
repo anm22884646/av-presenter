@@ -7,17 +7,35 @@ export class Compositor {
  private overlays:Record<'clock'|'countdown'|'text',HTMLElement[]>={clock:[],countdown:[],text:[]};
  private mediaId:string|null=null;
  private restartToken=-1;
+ private playbackRequested:boolean|null=null;
+ private mediaSuspended=false;
+ private renderingActive=true;
  private surface=document.createElement('div');
  private resize:ResizeObserver;
  constructor(private host:HTMLElement,private mode:'preview'|'program'|'output') {
   host.classList.add('composition');this.surface.className='surface';host.append(this.surface);
   this.video.className='background';this.image.className='background';
-  this.video.muted=mode!=='output';this.video.playsInline=true;this.video.preload='auto';
+  this.video.muted=mode!=='output';this.video.playsInline=true;this.video.preload=mode==='output'?'auto':'metadata';
   this.surface.append(this.video,this.image);
   this.video.addEventListener('error',()=>this.mediaError());this.image.addEventListener('error',()=>this.mediaError());
   this.video.addEventListener('ended',()=>{if(this.mediaId && mode==='output')window.av.reportEnded(this.mediaId,this.scene.media.restartToken);});
   this.resize=new ResizeObserver(()=>this.layout());this.resize.observe(host);
   setInterval(()=>this.tick(),100);this.layout();this.update(this.scene);
+ }
+ /** Control-only suspension never changes scene state or external Output playback. */
+ setControlActivity(visible:boolean,reduceVideoLoad:boolean){
+  if(this.mode==='output')return;
+  this.renderingActive=visible;
+  this.mediaSuspended=!visible || reduceVideoLoad;
+  this.syncPlayback();
+  if(visible)this.tick();
+ }
+ private syncPlayback(){
+  if(this.scene.media.item?.type!=='video')return;
+  const playing=this.scene.media.playing && !this.mediaSuspended;
+  if(this.playbackRequested===playing && !(playing && this.video.ended))return;
+  this.playbackRequested=playing;
+  if(playing){void this.video.play().catch(()=>{this.playbackRequested=null;});}else this.video.pause();
  }
  private mediaError(){if(this.mediaId)window.av.reportMediaError(this.mediaId);}
  private layout(){
@@ -28,18 +46,18 @@ export class Compositor {
  update(scene:Scene) {
   this.scene=structuredClone(scene);
   const item=scene.media.item;
-  if(item?.id!==this.mediaId) {
+  if((item?.id??null)!==this.mediaId) {
    this.video.pause();this.video.removeAttribute('src');this.video.load();this.image.removeAttribute('src');
    this.mediaId=item?.id??null;
    if(item?.type==='video')this.video.src=item.url;
    if(item?.type==='image')this.image.src=item.url;
-   this.restartToken=-1;
+   this.restartToken=-1;this.playbackRequested=null;
   }
   this.video.hidden=item?.type!=='video';this.image.hidden=item?.type!=='image';
   this.video.loop=scene.media.loop;
   if(item?.type==='video') {
    if(this.restartToken!==scene.media.restartToken){this.video.currentTime=0;this.restartToken=scene.media.restartToken;}
-   if(scene.media.playing){void this.video.play().catch(()=>{/* Media error event supplies the file/codec diagnosis. */});}else this.video.pause();
+   this.syncPlayback();
   }
   for(const key of ['clock','countdown','text'] as const) {
    const overlay=scene[key],styles=[overlay,...overlay.copies],nodes=this.overlays[key];
@@ -57,13 +75,17 @@ export class Compositor {
    background:style.backgroundEnabled?rgba(style.backgroundColor,style.backgroundOpacity):'transparent'});
  }
  private tick() {
+  if(!this.renderingActive)return;
   const now=new Date(),p=(n:number)=>String(n).padStart(2,'0');
   const hm=`${p(now.getHours())}:${p(now.getMinutes())}`;
   const clock=this.scene.clock.format==='HH:mm:ss'?`${hm}:${p(now.getSeconds())}`:this.scene.clock.format==='YYYY/MM/DD HH:mm'?`${now.getFullYear()}/${p(now.getMonth()+1)}/${p(now.getDate())} ${hm}`:hm;
   const countdown=formatDuration(remaining(this.scene.countdown,now.getTime()));
-  for(const node of this.overlays.clock)node.textContent=clock;
-  for(const node of this.overlays.countdown)node.textContent=countdown;
-  for(const node of this.overlays.text)node.textContent=this.scene.text.text;
+  for(const node of this.overlays.clock)this.setText(node,clock);
+  for(const node of this.overlays.countdown)this.setText(node,countdown);
+  for(const node of this.overlays.text)this.setText(node,this.scene.text.text);
+ }
+ private setText(node:HTMLElement,value:string){
+  if(node.textContent!==value)node.textContent=value;
  }
 }
 function rgba(hex:string,opacity:number){return `rgba(${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)},${opacity})`;}

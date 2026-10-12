@@ -8,7 +8,7 @@ export interface SavedSession {
  display:SavedDisplay|null; outputActive:boolean;
 }
 export interface SettingsDocument { version:1; preferences:Preferences; session:SavedSession|null }
-export const defaultPreferences=():Preferences=>({restoreOnLaunch:false,startAtLogin:false,language:'en'});
+export const defaultPreferences=():Preferences=>({restoreOnLaunch:false,startAtLogin:false,reduceControlVideoLoad:false,language:'en'});
 export function freezeScene(scene:Scene,now=Date.now()):Scene {
  const frozen=structuredClone(scene);frozen.countdown.remainingMs=remaining(scene.countdown,now);frozen.countdown.deadline=null;return frozen;
 }
@@ -25,6 +25,8 @@ export class SettingsStore {
    const document=JSON.parse(readFileSync(this.file,'utf8')) as SettingsDocument;
    if(document.version!==1 || typeof document.preferences?.restoreOnLaunch!=='boolean' || typeof document.preferences?.startAtLogin!=='boolean'
     || !['en','ja','zh-Hant','zh-Hans'].includes(document.preferences.language))throw new Error('Saved settings are invalid');
+   if(document.preferences.reduceControlVideoLoad!==undefined && typeof document.preferences.reduceControlVideoLoad!=='boolean')throw new Error('Saved settings are invalid');
+   document.preferences.reduceControlVideoLoad??=false;
    return document;
   }catch(error){if((error as NodeJS.ErrnoException).code==='ENOENT')return {version:1,preferences:defaultPreferences(),session:null};throw error;}
  }

@@ -8,7 +8,7 @@ const el=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById
 let preview=initialScene(),snapshot:Snapshot={program:initialScene(),media:[],output:{open:false,message:'Output closed'},error:null};
 const previewRenderer=new Compositor(el('preview'),'preview'),programRenderer=new Compositor(el('program'),'program');
 let lastError:string|null=null, durationInvalid=false, currentDisplays:DisplayInfo[]=[],settingsReady=false;
-let preferences:Preferences={restoreOnLaunch:false,startAtLogin:false,language:getLanguage()};
+let preferences:Preferences={restoreOnLaunch:false,startAtLogin:false,reduceControlVideoLoad:false,language:getLanguage()};
 let saveStatusKey='';
 type OverlayKey='text'|'clock'|'countdown';
 const selectedPosition:Record<OverlayKey,number>={text:0,clock:0,countdown:0};
@@ -65,7 +65,7 @@ function receive(next:Snapshot) {
   previewRenderer.update(preview);
   if(settingsReady)run(window.av.updatePreview(structuredClone(preview)));
  }
- snapshot=next;programRenderer.update(snapshot.program);renderMedia();
+ snapshot=next;applyControlActivity();programRenderer.update(snapshot.program);renderMedia();
  lastError=snapshot.error;renderLocalizedStatus();
 }
 for(const key of ['text','clock','countdown'] as const) {
@@ -100,7 +100,7 @@ el('set-duration').onclick=()=>{
 };
 for(const b of document.querySelectorAll<HTMLButtonElement>('[data-preview-timer]'))b.onclick=()=>{preview.countdown=operateTimer(preview.countdown,b.dataset.previewTimer as TimerAction);refresh();};
 for(const b of document.querySelectorAll<HTMLButtonElement>('[data-program-timer]'))b.onclick=()=>run(window.av.timer(b.dataset.programTimer as TimerAction));
-function renderTimerStatus(){el('timer-status').textContent=`${formatDuration(remaining(snapshot.program.countdown))} · ${t(snapshot.program.countdown.running && remaining(snapshot.program.countdown)>0?'Running':'Paused / complete')}`;}
+function renderTimerStatus(){if(document.hidden)return;const text=`${formatDuration(remaining(snapshot.program.countdown))} · ${t(snapshot.program.countdown.running && remaining(snapshot.program.countdown)>0?'Running':'Paused / complete')}`;if(el('timer-status').textContent!==text)el('timer-status').textContent=text;}
 setInterval(renderTimerStatus,100);
 function renderLocalizedStatus(){
  el('status').textContent=translateMessage(snapshot.output.message);
@@ -109,8 +109,17 @@ function renderLocalizedStatus(){
  el('program-loop').textContent=t(snapshot.program.media.loop?'Loop ON':'Loop OFF');
  el('duration-error').textContent=durationInvalid?t('Enter a valid duration, e.g. 10:00 or 01:30:00.'):'';
  el('save-status').textContent=saveStatusKey?t(saveStatusKey):'';
- renderTimerStatus();
+ renderTimerStatus();renderPerformanceStatus();
 }
+function applyControlActivity(){
+ const reduced=preferences.reduceControlVideoLoad && snapshot.output.open;
+ previewRenderer.setControlActivity(!document.hidden,reduced);programRenderer.setControlActivity(!document.hidden,reduced);
+ renderPerformanceStatus();
+}
+function renderPerformanceStatus(){
+ el('performance-note').textContent=preferences.reduceControlVideoLoad && snapshot.output.open?t('Control video previews are paused. External output continues playing.') : '';
+}
+document.addEventListener('visibilitychange',()=>{applyControlActivity();renderTimerStatus();});
 const languageSelect=el<HTMLSelectElement>('language');languageSelect.value=getLanguage();
 languageSelect.onchange=()=>{
  setLanguage(languageSelect.value);translateInterface(document.body);
@@ -179,6 +188,7 @@ function applySettings(value:StartupSettings){
  languageSelect.setAttribute('aria-label',t('Language'));
  el<HTMLInputElement>('restore-on-launch').checked=preferences.restoreOnLaunch;
  el<HTMLInputElement>('start-at-login').checked=preferences.startAtLogin;
+ el<HTMLInputElement>('reduce-control-video-load').checked=preferences.reduceControlVideoLoad;applyControlActivity();
  el<HTMLInputElement>('start-at-login').disabled=!value.loginSupported;
  renderDisplays(currentDisplays);renderMedia();renderLocalizedStatus();
  for(const key of ['text','clock','countdown'] as const)renderPositions(key);
@@ -196,12 +206,12 @@ function syncEditor(){
 el('save-settings').onclick=()=>run(window.av.saveSettings(structuredClone(preview),Number(el<HTMLSelectElement>('displays').value)).then(value=>{
  saveStatusKey='Settings saved';applySettings(value);
 }));
-for(const id of ['restore-on-launch','start-at-login']){
+for(const id of ['restore-on-launch','start-at-login','reduce-control-video-load']){
  el<HTMLInputElement>(id).onchange=()=>{
-  const next={...preferences,restoreOnLaunch:el<HTMLInputElement>('restore-on-launch').checked,startAtLogin:el<HTMLInputElement>('start-at-login').checked};
+  const next={...preferences,restoreOnLaunch:el<HTMLInputElement>('restore-on-launch').checked,startAtLogin:el<HTMLInputElement>('start-at-login').checked,reduceControlVideoLoad:el<HTMLInputElement>('reduce-control-video-load').checked};
   run(window.av.updatePreview(structuredClone(preview)).then(()=>window.av.updatePreferences(next)).then(value=>{
    saveStatusKey='Settings saved';applySettings(value);
-  }).catch(error=>{el<HTMLInputElement>(id).checked=id==='restore-on-launch'?preferences.restoreOnLaunch:preferences.startAtLogin;throw error;}));
+  }).catch(error=>{el<HTMLInputElement>(id).checked=id==='restore-on-launch'?preferences.restoreOnLaunch:id==='start-at-login'?preferences.startAtLogin:preferences.reduceControlVideoLoad;throw error;}));
  };
 }
 void initialize();refresh();

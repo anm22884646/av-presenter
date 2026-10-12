@@ -14,7 +14,7 @@ export interface Scene {
  countdown: Countdown;
  text: PositionedOverlay & { text: string };
 }
-export interface Preferences { restoreOnLaunch:boolean; startAtLogin:boolean; language:'en'|'ja'|'zh-Hant'|'zh-Hans' }
+export interface Preferences { restoreOnLaunch:boolean; startAtLogin:boolean; reduceControlVideoLoad:boolean; language:'en'|'ja'|'zh-Hant'|'zh-Hans' }
 export interface StartupSettings { preferences:Preferences; preview:Scene; selectedDisplayId?:number; savedAt:string|null; loginSupported:boolean }
 export interface Snapshot { program: Scene; media: MediaItem[]; output: OutputStatus; error: string | null }
 export type TimerAction = 'start' | 'pause' | 'reset';

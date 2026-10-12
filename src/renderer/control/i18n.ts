@@ -96,7 +96,9 @@ export const translations: Record<Language, Record<string,string>> = {
     "Add position": "Add position",
     "Remove position": "Remove position",
     "Position {number}": "Position {number}",
-    "All positions share the same content. Up to 8 positions.": "All positions share the same content. Up to 8 positions."
+    "All positions share the same content. Up to 8 positions.": "All positions share the same content. Up to 8 positions.",
+    "Reduce control video load while output is active": "Reduce control video load while output is active",
+    "Control video previews are paused. External output continues playing.": "Control video previews are paused. External output continues playing."
   },
   "ja": {
     "LIVE EVENT CONTROL": "ライブイベント操作",
@@ -193,7 +195,9 @@ export const translations: Record<Language, Record<string,string>> = {
     "Add position": "表示位置を追加",
     "Remove position": "表示位置を削除",
     "Position {number}": "位置 {number}",
-    "All positions share the same content. Up to 8 positions.": "すべての位置で同じ内容を表示します。最大8か所。"
+    "All positions share the same content. Up to 8 positions.": "すべての位置で同じ内容を表示します。最大8か所。",
+    "Reduce control video load while output is active": "出力中の操作画面の動画負荷を軽減",
+    "Control video previews are paused. External output continues playing.": "操作画面の動画プレビューは一時停止中です。外部出力の再生は継続します。"
   },
   "zh-Hant": {
     "LIVE EVENT CONTROL": "現場活動控制",
@@ -290,7 +294,9 @@ export const translations: Record<Language, Record<string,string>> = {
     "Add position": "新增顯示位置",
     "Remove position": "刪除顯示位置",
     "Position {number}": "位置 {number}",
-    "All positions share the same content. Up to 8 positions.": "所有位置共用相同內容，最多可設定 8 個位置。"
+    "All positions share the same content. Up to 8 positions.": "所有位置共用相同內容，最多可設定 8 個位置。",
+    "Reduce control video load while output is active": "輸出時降低控制視窗影片負載",
+    "Control video previews are paused. External output continues playing.": "控制端影片預覽已暫停，外部輸出仍正常播放。"
   },
   "zh-Hans": {
     "LIVE EVENT CONTROL": "现场活动控制",
@@ -387,7 +393,9 @@ export const translations: Record<Language, Record<string,string>> = {
     "Add position": "新增显示位置",
     "Remove position": "删除显示位置",
     "Position {number}": "位置 {number}",
-    "All positions share the same content. Up to 8 positions.": "所有位置共用相同内容，最多可设置 8 个位置。"
+    "All positions share the same content. Up to 8 positions.": "所有位置共用相同内容，最多可设置 8 个位置。",
+    "Reduce control video load while output is active": "输出时降低控制窗口视频负载",
+    "Control video previews are paused. External output continues playing.": "控制端视频预览已暂停，外部输出仍正常播放。"
   }
 };
 let language: Language = 'en';
