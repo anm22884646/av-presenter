@@ -137,7 +137,7 @@ function buildStyleEditor(key:'text'|'clock'|'countdown') {
  positions.append(label,add,remove);host.append(positions,hint);
 
  const definitions:[keyof OverlayStyle,string,string,number?,number?,number?][]=[
-  ['x','X (%)','number',0,100,1],['y','Y (%)','number',0,100,1],['fontSize','Font size (at 1080p)','number',8,300,1],['fontFamily','Font family','text'],
+  ['x','X (%)','number',0,100,0.01],['y','Y (%)','number',0,100,0.01],['fontSize','Font size (at 1080p)','number',8,300,1],['fontFamily','Font family','text'],
   ['fontWeight','Weight','weight'],['align','Alignment','align'],['color','Text color','color'],['padding','Padding','number',0,100,1],
   ['backgroundEnabled','Background','checkbox'],['backgroundColor','Background color','color'],['backgroundOpacity','Background opacity','number',0,1,0.05]
  ];

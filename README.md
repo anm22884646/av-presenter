@@ -57,3 +57,5 @@ For example, enter “Next stage starts at 10:00” once and place it at both th
 All positions are included in saved settings and exhibition startup restore. Existing 0.2 settings load as one position per overlay.
 
 TAKE always starts or resumes the selected video on Program. Taking overlay edits for the same video keeps its current playback position unless you explicitly restart or re-cue it. Preview stays in its prepared play/pause state; countdown start/pause remains controlled separately.
+
+X/Y percentage fields accept decimal positions such as `2.5` or `2.55`, with arrow increments of `0.01%`. This applies to every text, clock, and countdown position. Decimal coordinates are preserved by TAKE and saved settings.
