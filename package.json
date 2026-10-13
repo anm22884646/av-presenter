@@ -53,7 +53,7 @@
       "hardenedRuntime": false,
       "gatekeeperAssess": false,
       "notarize": false,
-      "extraFiles": [
+      "extraResources": [
         {
           "from": "MACOS-VALIDATION.md",
           "to": "MACOS-VALIDATION.md"
