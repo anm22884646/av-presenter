@@ -1,4 +1,4 @@
-name: Windows testing release
+name: Desktop testing release
 
 on:
   workflow_dispatch:
@@ -9,11 +9,11 @@ permissions:
   contents: write
 
 concurrency:
-  group: windows-testing-release
+  group: desktop-testing-release
   cancel-in-progress: false
 
 jobs:
-  release:
+  windows:
     if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[release]')
     runs-on: windows-latest
     timeout-minutes: 30
@@ -29,32 +29,86 @@ jobs:
         run: npm test
       - name: Package Windows x64
         run: npx electron-builder --win --x64 --dir --publish never
-      - name: Create download archives
+      - name: Create Windows and source archives
         shell: pwsh
         run: |
           $version = (Get-Content package.json | ConvertFrom-Json).version
-          "APP_VERSION=$version" >> $env:GITHUB_ENV
           New-Item -ItemType Directory -Force downloads | Out-Null
           Copy-Item README.md,WINDOWS-VALIDATION.md release/win-unpacked/
           Compress-Archive -Path release/win-unpacked -DestinationPath "downloads/AV-Presenter-Windows-x64-$version.zip"
           git archive --format=zip --output="downloads/AV-Presenter-Source-$version.zip" HEAD
-          $lines = Get-ChildItem downloads/*.zip | ForEach-Object { "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower())  $($_.Name)" }
-          $lines | Set-Content downloads/SHA256SUMS.txt
-      - name: Keep workflow artifacts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-downloads-windows
+          path: downloads/*
+
+  mac:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[release]')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Compile and test
+        run: npm test
+      - name: Package macOS ${{ matrix.arch }}
+        run: npx electron-builder --mac --${{ matrix.arch }} --publish never
+      - name: Verify local app signature
+        env:
+          APP_ARCH: ${{ matrix.arch }}
+        run: |
+          app_folder=mac
+          if [ "$APP_ARCH" = arm64 ]; then app_folder=mac-arm64; fi
+          codesign --verify --deep --strict --verbose=2 "release/$app_folder/AV Presenter.app"
+      - name: Launch and verify packaged app
+        run: node scripts/smoke-mac.cjs ${{ matrix.arch }}
+      - name: Keep macOS smoke test evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: AV-Presenter-Windows-testing
-          path: downloads/*
-      - name: Publish testing release
-        shell: pwsh
+          name: macOS-smoke-${{ matrix.arch }}
+          path: artifacts/*
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-downloads-mac-${{ matrix.arch }}
+          path: |
+            release/*.dmg
+            release/*.zip
+          if-no-files-found: error
+
+  publish:
+    needs: [windows, mac]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: desktop-downloads-*
+          merge-multiple: true
+          path: downloads
+      - name: Publish Windows and macOS testing release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "v$env:APP_VERSION"
-          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
-          if ($LASTEXITCODE -ne 0) {
-            gh release create $tag --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --prerelease --title "AV Presenter $env:APP_VERSION - Windows testing" --notes-file "release-notes/av-presenter-v$env:APP_VERSION.md"
-            if ($LASTEXITCODE -ne 0) { throw 'Could not create release' }
-          }
-          gh release upload $tag downloads/*.zip downloads/SHA256SUMS.txt --repo $env:GITHUB_REPOSITORY --clobber
-          if ($LASTEXITCODE -ne 0) { throw 'Could not upload release assets' }
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          (cd downloads && sha256sum *.zip *.dmg > SHA256SUMS.txt)
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create "$tag" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --title "AV Presenter $version - Windows and macOS testing" --notes-file "release-notes/av-presenter-v$version.md"
+          fi
+          gh release upload "$tag" downloads/*.zip downloads/*.dmg downloads/SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" --clobber

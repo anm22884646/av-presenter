@@ -98,7 +98,10 @@ export const translations: Record<Language, Record<string,string>> = {
     "Position {number}": "Position {number}",
     "All positions share the same content. Up to 8 positions.": "All positions share the same content. Up to 8 positions.",
     "Reduce control video load while output is active": "Reduce control video load while output is active",
-    "Control video previews are paused. External output continues playing.": "Control video previews are paused. External output continues playing."
+    "Control video previews are paused. External output continues playing.": "Control video previews are paused. External output continues playing.",
+    "Start automatically at login": "Start automatically at login",
+    "Login startup requires a packaged Windows or macOS application": "Login startup requires a packaged Windows or macOS application",
+    "Could not update login startup": "Could not update login startup"
   },
   "ja": {
     "LIVE EVENT CONTROL": "ライブイベント操作",
@@ -197,7 +200,10 @@ export const translations: Record<Language, Record<string,string>> = {
     "Position {number}": "位置 {number}",
     "All positions share the same content. Up to 8 positions.": "すべての位置で同じ内容を表示します。最大8か所。",
     "Reduce control video load while output is active": "出力中の操作画面の動画負荷を軽減",
-    "Control video previews are paused. External output continues playing.": "操作画面の動画プレビューは一時停止中です。外部出力の再生は継続します。"
+    "Control video previews are paused. External output continues playing.": "操作画面の動画プレビューは一時停止中です。外部出力の再生は継続します。",
+    "Start automatically at login": "ログイン時に自動起動",
+    "Login startup requires a packaged Windows or macOS application": "ログイン時の自動起動にはパッケージ化した Windows または macOS アプリが必要です",
+    "Could not update login startup": "ログイン時の自動起動設定を更新できません"
   },
   "zh-Hant": {
     "LIVE EVENT CONTROL": "現場活動控制",
@@ -296,7 +302,10 @@ export const translations: Record<Language, Record<string,string>> = {
     "Position {number}": "位置 {number}",
     "All positions share the same content. Up to 8 positions.": "所有位置共用相同內容，最多可設定 8 個位置。",
     "Reduce control video load while output is active": "輸出時降低控制視窗影片負載",
-    "Control video previews are paused. External output continues playing.": "控制端影片預覽已暫停，外部輸出仍正常播放。"
+    "Control video previews are paused. External output continues playing.": "控制端影片預覽已暫停，外部輸出仍正常播放。",
+    "Start automatically at login": "登入後自動啟動",
+    "Login startup requires a packaged Windows or macOS application": "登入自動啟動需要使用已封裝的 Windows 或 macOS 應用程式",
+    "Could not update login startup": "無法更新登入自動啟動設定"
   },
   "zh-Hans": {
     "LIVE EVENT CONTROL": "现场活动控制",
@@ -395,7 +404,10 @@ export const translations: Record<Language, Record<string,string>> = {
     "Position {number}": "位置 {number}",
     "All positions share the same content. Up to 8 positions.": "所有位置共用相同内容，最多可设置 8 个位置。",
     "Reduce control video load while output is active": "输出时降低控制窗口视频负载",
-    "Control video previews are paused. External output continues playing.": "控制端视频预览已暂停，外部输出仍正常播放。"
+    "Control video previews are paused. External output continues playing.": "控制端视频预览已暂停，外部输出仍正常播放。",
+    "Start automatically at login": "登录后自动启动",
+    "Login startup requires a packaged Windows or macOS application": "登录自动启动需要使用已打包的 Windows 或 macOS 应用程序",
+    "Could not update login startup": "无法更新登录自动启动设置"
   }
 };
 let language: Language = 'en';

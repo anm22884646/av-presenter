@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen, dialog, protocol, net, powerSaveBlocker } from 'electron';
+import { app, BrowserWindow, ipcMain, screen, dialog, protocol, net, powerSaveBlocker, Menu } from 'electron';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { access } from 'node:fs/promises';
@@ -10,6 +10,7 @@ import { validateScene } from './validation';
 if(!app.requestSingleInstanceLock()) app.quit();
 app.on('second-instance',()=>{if(control){if(control.isMinimized())control.restore();control.focus();}});
 protocol.registerSchemesAsPrivileged([{scheme:'av-media',privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true}}]);
+const loginSupported=()=>app.isPackaged && (process.platform==='win32' || process.platform==='darwin');
 let control:BrowserWindow|null=null,output:BrowserWindow|null=null;
 let status:OutputStatus={open:false,message:'Output closed'};
 let program=initialScene(),error:string|null=null;
@@ -19,7 +20,7 @@ let preview=initialScene(),preferences=defaultPreferences(),store:SettingsStore;
 let savedDocument:SettingsDocument={version:1,preferences,session:null};
 let savedAt:string|null=null,selectedDisplay:SavedDisplay|null=null,wantsOutput=false,quitting=false,closingForDisconnect=false;
 let persistTimer:ReturnType<typeof setTimeout>|undefined;
-const startup=():StartupSettings=>({preferences,preview,selectedDisplayId:selectedDisplay?.id,savedAt,loginSupported:process.platform==='win32' && app.isPackaged});
+const startup=():StartupSettings=>({preferences,preview,selectedDisplayId:selectedDisplay?.id,savedAt,loginSupported:loginSupported()});
 function saveSettings(includeSession:boolean){
  const next:SettingsDocument={version:1,preferences:{...preferences},session:includeSession?{
   preview:freezeScene(preview),program:freezeScene(program),media:[...library.values()],display:selectedDisplay,outputActive:wantsOutput
@@ -60,9 +61,9 @@ const snapshot=():Snapshot=>({program,media:media(),output:status,error});
 const broadcast=(persist=true)=>{if(persist)scheduleSave();for(const w of [control,output]) if(w && !w.isDestroyed()) w.webContents.send('state:changed',snapshot());};
 const displays=():DisplayInfo[]=>screen.getAllDisplays().map((d,i)=>({id:d.id,label:d.label||`Display ${i+1}`,width:d.size.width,height:d.size.height,primary:d.id===screen.getPrimaryDisplay().id}));
 function createWindow(kind:'control'|'output') {
- const win=new BrowserWindow({width:1200,height:800,backgroundColor:'#000000',show:false,frame:kind==='control',autoHideMenuBar:true,
+ const win=new BrowserWindow({width:1200,height:800,backgroundColor:'#000000',show:false,frame:kind==='control',fullscreenable:kind==='control' || process.platform!=='darwin',autoHideMenuBar:true,
   webPreferences:{preload:path.join(__dirname,'../preload/preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:kind==='control'}});
- win.setMenu(null);
+ if(process.platform!=='darwin')win.setMenu(null);
  win.webContents.setWindowOpenHandler(()=>({action:'deny'}));
  win.webContents.on('will-navigate',e=>e.preventDefault());
  win.webContents.session.setPermissionRequestHandler((_wc,_permission,cb)=>cb(false));
@@ -86,7 +87,9 @@ function positionOutput(id:number) {
   const b=display.workArea;
   output.setBounds({x:b.x+20,y:b.y+20,width:Math.max(200,Math.min(960,b.width-40)),height:Math.max(150,Math.min(540,b.height-40))});
   output.setAlwaysOnTop(false);
- } else {output.setBounds(display.bounds);output.setAlwaysOnTop(true,'screen-saver');output.setFullScreen(true);}
+ } else {output.setBounds(display.bounds);output.setAlwaysOnTop(true,'screen-saver');if(process.platform!=='darwin')output.setFullScreen(true);}
+ // A borderless macOS output stays on its display without creating a fullscreen Space.
+ if(process.platform==='darwin')output.setVisibleOnAllWorkspaces(!single,{visibleOnFullScreen:!single});
  output.show();
  status={open:true,displayId:id,message:single?'Open — single-display window mode':'Connected — fullscreen'};
  if(powerBlock===undefined)powerBlock=powerSaveBlocker.start('prevent-display-sleep');
@@ -96,13 +99,14 @@ app.whenReady().then(()=>{
  store=new SettingsStore(path.join(app.getPath('userData'),'settings.json'));
  try{savedDocument=store.load();preferences=savedDocument.preferences;if(preferences.restoreOnLaunch)restoreSession();}
  catch(e){preferences={...preferences,restoreOnLaunch:false};error=`Could not restore settings: ${e instanceof Error?e.message:String(e)}`;}
- if(process.platform==='win32' && app.isPackaged)preferences.startAtLogin=app.getLoginItemSettings().openAtLogin;
+ if(loginSupported())preferences.startAtLogin=app.getLoginItemSettings().openAtLogin;
  protocol.handle('av-media',async request=>{
   const url=new URL(request.url),entry=library.get(url.hostname);
   if(!entry)return new Response('Unknown media',{status:404});
   try {await access(entry.path);return await net.fetch(pathToFileURL(entry.path).href,{headers:request.headers});}
   catch {error=`Missing or unreadable file: ${entry.item.name}`;broadcast();return new Response('Media unavailable',{status:404});}
  });
+ if(process.platform==='darwin')Menu.setApplicationMenu(Menu.buildFromTemplate([{role:'appMenu'},{role:'editMenu'},{role:'windowMenu'}]));
  control=createWindow('control');
  const b=screen.getPrimaryDisplay().workArea;
  control.setBounds({x:b.x,y:b.y,width:Math.min(1440,b.width),height:Math.min(960,b.height)});
@@ -123,9 +127,9 @@ app.whenReady().then(()=>{
  handle('settings:preferences',(value:Preferences)=>{
   if(!value || typeof value.restoreOnLaunch!=='boolean' || typeof value.startAtLogin!=='boolean' || typeof value.reduceControlVideoLoad!=='boolean' || !['en','ja','zh-Hant','zh-Hans'].includes(value.language))throw new Error('Invalid preferences');
   if(value.startAtLogin!==preferences.startAtLogin){
-   if(process.platform!=='win32' || !app.isPackaged)throw new Error('Windows login startup requires a packaged Windows application');
-   app.setLoginItemSettings({openAtLogin:value.startAtLogin,path:process.execPath});
-   if(app.getLoginItemSettings().openAtLogin!==value.startAtLogin)throw new Error('Could not update Windows login startup');
+   if(!loginSupported())throw new Error('Login startup requires a packaged Windows or macOS application');
+   app.setLoginItemSettings({openAtLogin:value.startAtLogin,...(process.platform==='win32'?{path:process.execPath}:{})});
+   if(app.getLoginItemSettings().openAtLogin!==value.startAtLogin)throw new Error('Could not update login startup');
   }
   preferences={...value};clearTimeout(persistTimer);saveSettings(preferences.restoreOnLaunch);return startup();
  });

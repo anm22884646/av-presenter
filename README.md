@@ -1,9 +1,9 @@
 # AV Presenter
 
-Windows-first Electron + TypeScript MVP for event playback, Preview/Program cues, and overlays.
+Windows and macOS Electron + TypeScript application for event playback, Preview/Program cues, and overlays.
 
 Download the Windows validation build from [GitHub Releases](https://github.com/anm22884646/av-presenter/releases). Unzip the entire folder and run `AV Presenter.exe`.
-See [Windows validation](WINDOWS-VALIDATION.md) for acceptance steps and current limitations.
+See [Windows validation](WINDOWS-VALIDATION.md) and [macOS validation](MACOS-VALIDATION.md) for acceptance steps and current limitations.
 
 ## Development on Windows 11 x64
 
@@ -30,7 +30,7 @@ The packaging command produces portable and NSIS targets in `release/`. Local bu
 
 TAKE deep-copies Preview into Program. CLEAR disables only Program overlays. A countdown deadline survives unrelated cue edits. Output requests the current state at initialization, so it does not depend on receiving an earlier IPC broadcast.
 
-Current settings persist in the application user-data directory when saved; optional restore and Windows login startup are available. Frame-perfect sync is not included. Windows runtime and real multi-monitor verification remain pending; see validation notes.
+Current settings persist in the application user-data directory when saved; optional restore and login startup are available. Frame-perfect sync is not included. Windows runtime and real multi-monitor verification remain pending; see validation notes.
 
 ## Language and exhibition startup (0.3.0)
 
@@ -40,7 +40,7 @@ Prepare Preview, TAKE the intended exhibit content, start output on the intended
 
 - **SAVE CURRENT SETTINGS**: saves Preview, Program, overlay styles, timer, media references, and selected display without changing Program.
 - **Restore current state on next launch**: automatically saves subsequent edits and restores the scene, playback, and previously active output at launch.
-- **Start automatically at Windows login**: available in packaged Windows builds; registers the current executable with Windows login startup.
+- **Start automatically at login**: available in packaged Windows and macOS builds; registers the installed app for login startup.
 
 Countdowns resume from their last saved remaining time; powered-off time is excluded. Video starts at its beginning, with the saved play/pause and loop flags. Missing displays wait for reconnection rather than redirecting output to the primary monitor. Media must stay at its saved path.
 
@@ -67,3 +67,13 @@ Text overlays update only when displayed content changes. Overlay edits no longe
 For 4K video or a less powerful computer, enable **Reduce control video load while output is active** below the monitors. While Output is open, both Control video previews pause on a still frame to avoid their additional continuous video decoding. Text, clock, and countdown continue to update in visible Control; TAKE and on-air transport still operate Output normally. Uncheck the option or stop Output to resume Control video previews. This preference is remembered separately from scene restoration and is off by default.
 
 Output resolution, video playback, audio, and overlay styling are preserved. This reduces redundant work; it does not guarantee smooth 4K playback on every GPU or codec. For testing, compare the same scene with the option off/on and with Control minimized, while keeping the same output resolution and display refresh rate. Check CPU, GPU Video Decode, and GPU 3D usage in Windows Task Manager. Physical Windows/4K performance measurements remain pending.
+
+## macOS testing release (0.4.0)
+
+Download the **arm64** DMG for an Apple Silicon Mac, or the **x64** DMG for an Intel Mac from [GitHub Releases](https://github.com/anm22884646/av-presenter/releases). macOS 12 or later is required. Native CI runs on macOS 15; older supported systems still need physical validation.
+
+Open the DMG, drag **AV Presenter.app** into **Applications**, eject the disk image, and launch the installed app. ZIP bundles are also available. The testing app uses ad-hoc signing and has no Apple Developer ID or notarization. If macOS blocks it, attempt to open it and then allow this app through **System Settings → Privacy & Security → Open Anyway**, when available. Managed Macs may require administrator approval.
+
+Text, clock, countdown, all 8 positions, decimal coordinates, Preview/Program TAKE, video transport, settings restore, and low-load controls are shared with Windows. macOS multi-display Output covers the selected monitor using a borderless window, avoiding a native fullscreen Space. The Mac menu supports normal editing shortcuts and Command-Q. Login startup must be configured after moving the app to its final Applications location.
+
+To develop on a Mac, install Node.js 24 LTS, run `npm ci`, then `npm start`. Run `npm run pack:mac` to package both architectures on macOS. GitHub Actions packages each architecture on a native Mac runner, verifies its signature, and runs `scripts/smoke-mac.cjs` against the packaged app before publishing. The smoke test exercises native IPC, image decoding, multi-position TAKE, Output, and settings restoration. Physical display behavior, downloaded-app Gatekeeper behavior, login startup, video/audio, and 4K performance still need real-Mac testing. See [macOS validation](MACOS-VALIDATION.md).
